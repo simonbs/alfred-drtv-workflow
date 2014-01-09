@@ -17,4 +17,4 @@ You can select a video to open it in your default browser. Hold the option key a
 
 About
 ===
-The workflow is developed by [@simonbs](http://twitter.com/simonbs).
+The workflow is developed by [@simonbs](http://twitter.com/simonbs) and is heavily inspired by [dldr.brnbw.com](http://dldr.brnbw.com) by [@mikker](http://twitter.com/mikker).
