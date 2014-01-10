@@ -3,6 +3,7 @@
 from DanmarksRadio import DanmarksRadio
 from Feedback import Feedback
 from subprocess import Popen, PIPE
+from subprocess import call
 import re
 import urllib
 import os
@@ -120,11 +121,16 @@ def store_thumb(url, name):
 		urllib.urlretrieve('%s?width=60' % (url), icon_path)
 	return icon_path
 	
-def run_applescript(script):
-	'''Runs an AppleScript'''
-	p = Popen(["osascript", "-"], stdin=PIPE, stdout=PIPE, stderr=PIPE)
-	stdout, stderr = p.communicate(script)
+def run_cmd(cmd):
+	'''Runs a command'''
+	p = Popen(cmd, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+	stdout, stderr = p.communicate()
 	return stdout
+
+def is_iterm2_installed():
+	'''Checks if iTerm 2 exists'''
+	resp = run_cmd(["osascript", "apps/app-installed.app", "com.googlecode.iterm2"])
+	return (resp.strip() == '1')
 	
 def action_open_program(query):
 	'''Action called by Alfred to open a program'''
@@ -139,57 +145,9 @@ def action_download_program(query):
 		danmarks_radio = DanmarksRadio()
 		direct_video_url = danmarks_radio.get_direct_video_url(params['video_url'][0])
 		if direct_video_url is None:
-			script = """
-			display notification "I was unable to download the program." with title "This is embarrasing..."
-			"""
-			run_applescript(script)
+			run_cmd(["osascript", "apps/display-notification.app", "I was unable to download the video.", "This is embarrasing..."])
 		else:
-			command = 'ffmpeg -i %s -c copy -absf aac_adtstoasc ~/Downloads/%s.mp4' % (direct_video_url, params['slug'][0])
-			script = """
-			set command to "%s"
-			set isiTermRunning to is_running("iTerm")
-			set doesiTermExist to iterm_exists()
-			if doesiTermExist then
-				tell application "iTerm"
-					if not isiTermRunning then
-						tell current session of current terminal to write text command
-					else
-						activate current terminal
-						tell the current terminal
-							set newSession to (launch session "Default Session")
-							tell newSession to write text command
-						end tell
-					end if
-				end tell
-			else
-				set isTerminalRunning to is_running("Terminal")
-				tell application "Terminal"
-					if isTerminalRunning then
-						activate
-						tell application "System Events" to keystroke "t" using command down
-						repeat while contents of selected tab of window 1 starts with linefeed
-							delay 0.01
-						end repeat
-						do script command
-					else
-						do script command
-						activate
-					end if
-				end tell
-			end if
-			
-			on iterm_exists()
-				set doesExist to false
-				try
-					do shell script "osascript -e 'exists application \\"iTerm\\"'"
-					set doesExist to true
-				end try
-			
-				return doesExist
-			end iterm_exists
-			
-			on is_running(appName)
-				tell application "System Events" to (name of processes) contains appName
-			end is_running
-			""" % (command)
-			run_applescript(script)
+			if is_iterm2_installed():
+				run_cmd(["osascript", "apps/download-using-iterm.app", direct_video_url, params['slug'][0]])
+			else:
+				run_cmd(["osascript", "apps/download-using-terminal.app", direct_video_url, params['slug'][0]])

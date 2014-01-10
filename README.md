@@ -15,6 +15,11 @@ The workflow has two commands:
 
 You can select a video to open it in your default browser. Hold the option key and select the video to start downloading it.
 
+Installation
+===
+
+[Download the latest release](https://github.com/simonbs/alfred-drtv-workflow/releases) and double click the .alfredworkflow file. This will open the file in Alfred and install the workflow.
+
 About
 ===
 The workflow is developed by [@simonbs](http://twitter.com/simonbs) and is heavily inspired by [dldr.brnbw.com](http://dldr.brnbw.com) by [@mikker](http://twitter.com/mikker).
