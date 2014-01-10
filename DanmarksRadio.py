@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import urllib2
 import json
+import re
 import operator
 from datetime import datetime
 from datetime import date
@@ -120,7 +121,15 @@ class DanmarksRadio(object):
 						break # We found both an image and a video URL
 			if 'PrimaryBroadcastStartTime' in item: # Try to figure out when the program was broadcasted
 				broadcast_time_str = item['PrimaryBroadcastStartTime']
-				broadcast_time = datetime.strptime(broadcast_time_str, '%Y-%m-%dT%H:%M:%SZ')
+				regex_milliseconds = r'^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{1,2}:\d{1,2}\.\d{1,4}Z$'
+				regex_no_milliseconds = r'^\d{4}-\d{1,2}-\d{1,2}T\d{1,2}:\d{1,2}:\d{1,2}Z$'
+				if re.compile(regex_no_milliseconds).match(broadcast_time_str) is not None:	
+					broadcast_time = datetime.strptime(broadcast_time_str, '%Y-%m-%dT%H:%M:%SZ')
+				elif re.compile(regex_milliseconds).match(broadcast_time_str) is not None:
+					broadcast_time = datetime.strptime(broadcast_time_str, '%Y-%m-%dT%H:%M:%S.%fZ')
+				else:
+					print broadcast_time_str
+					broadcast_time = None
 			else:
 				broadcast_time = None
 			card = DanmarksRadioProgramCard(
