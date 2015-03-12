@@ -88,12 +88,17 @@ class DanmarksRadio(object):
 		'''Gives a direct video URL'''
 		response = self.__load_url(video_url)
 		if response is not None and 'Links' in response:
-			links = response['Links']
-			download_link = None
-			for link in links:
-				if link['Target'] == 'HLS' and link['FileFormat'] == 'mp4':
-					download_link = link['Uri']
-					break
+                  links = response['Links']
+                  download_link = None
+                  prev_bitrate = 0
+                  for link in links:
+                    if link['FileFormat'] != 'mp4':
+                      continue
+                    if link['Target'] == 'Download' and link['Bitrate'] > prev_bitrate:
+                      download_link = link['Uri']
+                      prev_bitrate = link['Bitrate']
+                    elif link['Target'] == 'HLS' and download_link == None:
+                      download_link = link['Uri']
 		return download_link
 
 	def __parse_program_card(self, item):
